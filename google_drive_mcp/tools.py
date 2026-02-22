@@ -31,6 +31,17 @@ def register_tools(mcp: FastMCP) -> None:
         query: str = "",
         page_size: int = 10,
     ) -> FilesListToolResponse:
+        """List files in Google Drive.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            folder_id: Optional parent folder ID filter.
+            query: Optional Drive query fragment appended to search.
+            page_size: Maximum number of results (capped at 1000).
+
+        Returns:
+            File count and list of file metadata objects or error.
+        """
         logger.info("Executing list_files")
         try:
             service = get_service(oauth_token)
@@ -66,6 +77,15 @@ def register_tools(mcp: FastMCP) -> None:
     def get_file_metadata(
         oauth_token: OAuthTokenData, file_id: str
     ) -> ApiObjectResponse:
+        """Get full metadata for a Drive file.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_id: Google Drive file ID.
+
+        Returns:
+            Full file metadata object or error.
+        """
         logger.info("Executing get_file_metadata")
         logger.debug(f"File ID: {file_id}")
         try:
@@ -83,6 +103,16 @@ def register_tools(mcp: FastMCP) -> None:
     def download_file(
         oauth_token: OAuthTokenData, file_id: str, destination_path: str
     ) -> MessageToolResponse:
+        """Download a Drive file to local disk.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_id: Google Drive file ID.
+            destination_path: Local target path where bytes are written.
+
+        Returns:
+            Success message containing destination path or error.
+        """
         logger.info("Executing download_file")
         logger.debug(f"Downloading file {file_id} to {destination_path}")
         try:
@@ -114,6 +144,18 @@ def register_tools(mcp: FastMCP) -> None:
         folder_id: str | None = None,
         mime_type: str | None = None,
     ) -> UploadFileToolResponse:
+        """Upload a local file to Drive.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_path: Local path to file being uploaded.
+            name: Optional destination filename in Drive; defaults to local filename.
+            folder_id: Optional parent folder ID in Drive.
+            mime_type: Optional MIME type (e.g., `text/plain`, `application/pdf`).
+
+        Returns:
+            Success message and uploaded file metadata or error.
+        """
         logger.info("Executing upload_file")
         try:
             service = get_service(oauth_token)
@@ -147,6 +189,16 @@ def register_tools(mcp: FastMCP) -> None:
         name: str,
         parent_folder_id: str | None = None,
     ) -> CreateFolderToolResponse:
+        """Create a folder in Drive.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            name: Folder name.
+            parent_folder_id: Optional parent folder ID.
+
+        Returns:
+            Success message and created folder metadata or error.
+        """
         logger.info("Executing create_folder")
         try:
             service = get_service(oauth_token)
@@ -174,6 +226,15 @@ def register_tools(mcp: FastMCP) -> None:
     def delete_file(
         oauth_token: OAuthTokenData, file_id: str
     ) -> MessageToolResponse:
+        """Delete a Drive file or folder by ID.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_id: File or folder ID to delete.
+
+        Returns:
+            Deletion status message or error.
+        """
         logger.info("Executing delete_file")
         logger.debug(f"Deleting file/folder: {file_id}")
         try:
@@ -192,6 +253,16 @@ def register_tools(mcp: FastMCP) -> None:
     def search_files(
         oauth_token: OAuthTokenData, query: str, page_size: int = 10
     ) -> FilesListToolResponse:
+        """Search Drive using advanced query syntax.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            query: Drive query expression (e.g., `name contains 'report'`).
+            page_size: Maximum number of results (capped at 1000).
+
+        Returns:
+            File count and matching file metadata list or error.
+        """
         logger.info("Executing search_files")
         logger.debug(f"Search query: {query}")
         try:
@@ -226,6 +297,20 @@ def register_tools(mcp: FastMCP) -> None:
         role: str = "reader",
         share_type: str | None = None,
     ) -> ShareFileToolResponse:
+        """Create a sharing permission for a file.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_id: Google Drive file ID.
+            email: Recipient email when sharing with `share_type='user'`.
+            role: Permission role. Typical values: `reader`, `commenter`, `writer`.
+            share_type: Permission type. Typical values: `user`, `group`, `domain`,
+                `anyone`. If omitted, defaults to `user` when email is set,
+                otherwise `anyone`.
+
+        Returns:
+            Sharing status, permission ID, links, or error.
+        """
         logger.info("Executing share_file")
         try:
             service = get_service(oauth_token)
@@ -262,6 +347,15 @@ def register_tools(mcp: FastMCP) -> None:
         description="Get the content of a text file from Google Drive",
     )
     def get_file_content(oauth_token: OAuthTokenData, file_id: str) -> str:
+        """Fetch UTF-8 text content of a Drive file.
+
+        Args:
+            oauth_token: OAuth credentials object with token fields.
+            file_id: Google Drive file ID.
+
+        Returns:
+            Decoded file content string, or an error message string.
+        """
         logger.info("Executing get_file_content")
         try:
             service = get_service(oauth_token)
