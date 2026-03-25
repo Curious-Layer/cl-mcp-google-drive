@@ -1,5 +1,3 @@
-# Google Drive MCP Server
-
 **Manage files and folders in Google Drive via API.**
 
 A Model Context Protocol (MCP) server that exposes Google Drive's API for managing, uploading, downloading, and sharing files seamlessly.
