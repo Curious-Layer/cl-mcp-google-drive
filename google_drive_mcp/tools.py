@@ -2,6 +2,7 @@ import io
 import logging
 import os
 from typing import Any
+from pydantic import Field
 
 from fastmcp import FastMCP
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -26,19 +27,12 @@ def register_tools(mcp: FastMCP) -> None:
         description="List files in Google Drive. Supports filtering by folder, name, and type.",
     )
     def list_files(
-        oauth_token: OAuthTokenData,
-        folder_id: str | None = None,
-        query: str = "",
-        page_size: int = 10,
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        folder_id: str | None = Field(default=None, description="Optional parent folder ID to filter by"),
+        query: str = Field(default="", description="Optional additional Drive query fragment (e.g., `name contains 'report'`)"),
+        page_size: int = Field(default=10, description="Maximum number of results to return (capped at 1000)")
     ) -> FilesListToolResponse:
-        """List files in Google Drive.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            folder_id: Optional parent folder ID filter.
-            query: Optional Drive query fragment appended to search.
-            page_size: Maximum number of results (capped at 1000).
-
+        """
         Returns:
             File count and list of file metadata objects or error.
         """
@@ -75,14 +69,10 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="get_file_metadata", description="Get metadata for a specific file by ID")
     def get_file_metadata(
-        oauth_token: OAuthTokenData, file_id: str
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        file_id: str = Field(..., description="Google Drive file ID")
     ) -> ApiObjectResponse:
-        """Get full metadata for a Drive file.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_id: Google Drive file ID.
-
+        """
         Returns:
             Full file metadata object or error.
         """
@@ -101,15 +91,11 @@ def register_tools(mcp: FastMCP) -> None:
         name="download_file", description="Download a file from Google Drive to local disk"
     )
     def download_file(
-        oauth_token: OAuthTokenData, file_id: str, destination_path: str
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        file_id: str = Field(..., description="Google Drive file ID"),
+        destination_path: str = Field(..., description="Local destination path")
     ) -> MessageToolResponse:
-        """Download a Drive file to local disk.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_id: Google Drive file ID.
-            destination_path: Local target path where bytes are written.
-
+        """
         Returns:
             Success message containing destination path or error.
         """
@@ -138,21 +124,13 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="upload_file", description="Upload a file to Google Drive")
     def upload_file(
-        oauth_token: OAuthTokenData,
-        file_path: str,
-        name: str | None = None,
-        folder_id: str | None = None,
-        mime_type: str | None = None,
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        file_path: str = Field(..., description="Local path to file being uploaded"),
+        name: str | None = Field(default=None, description="Optional destination filename in Drive; defaults to local filename"),
+        folder_id: str | None = Field(default=None, description="Optional parent folder ID in Drive"),
+        mime_type: str | None = Field(default=None, description="Optional MIME type (e.g., `text/plain`, `application/pdf`)"),
     ) -> UploadFileToolResponse:
-        """Upload a local file to Drive.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_path: Local path to file being uploaded.
-            name: Optional destination filename in Drive; defaults to local filename.
-            folder_id: Optional parent folder ID in Drive.
-            mime_type: Optional MIME type (e.g., `text/plain`, `application/pdf`).
-
+        """
         Returns:
             Success message and uploaded file metadata or error.
         """
@@ -185,17 +163,11 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_folder", description="Create a new folder in Google Drive")
     def create_folder(
-        oauth_token: OAuthTokenData,
-        name: str,
-        parent_folder_id: str | None = None,
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        name: str = Field(..., description="Folder name"),
+        parent_folder_id: str | None = Field(default=None, description="Optional parent folder ID"),
     ) -> CreateFolderToolResponse:
-        """Create a folder in Drive.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            name: Folder name.
-            parent_folder_id: Optional parent folder ID.
-
+        """
         Returns:
             Success message and created folder metadata or error.
         """
@@ -224,14 +196,10 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="delete_file", description="Delete a file or folder from Google Drive")
     def delete_file(
-        oauth_token: OAuthTokenData, file_id: str
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        file_id: str = Field(..., description="Google Drive file or folder ID to delete"),
     ) -> MessageToolResponse:
-        """Delete a Drive file or folder by ID.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_id: File or folder ID to delete.
-
+        """
         Returns:
             Deletion status message or error.
         """
@@ -251,15 +219,11 @@ def register_tools(mcp: FastMCP) -> None:
         description="Search for files in Google Drive using advanced queries",
     )
     def search_files(
-        oauth_token: OAuthTokenData, query: str, page_size: int = 10
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        query: str = Field(..., description="Drive query expression (e.g., `name contains 'report'`)"),
+        page_size: int = Field(default=10, description="Maximum number of results (capped at 1000)"),
     ) -> FilesListToolResponse:
-        """Search Drive using advanced query syntax.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            query: Drive query expression (e.g., `name contains 'report'`).
-            page_size: Maximum number of results (capped at 1000).
-
+        """
         Returns:
             File count and matching file metadata list or error.
         """
@@ -291,23 +255,13 @@ def register_tools(mcp: FastMCP) -> None:
         description="Share a file with a user or make it publicly accessible",
     )
     def share_file(
-        oauth_token: OAuthTokenData,
-        file_id: str,
-        email: str | None = None,
-        role: str = "reader",
-        share_type: str | None = None,
+        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
+        file_id: str = Field(..., description="Google Drive file ID"),
+        email: str | None = Field(default=None, description="Recipient email when sharing with `share_type='user'`"),
+        role: str = Field(default="reader", description="Permission role (e.g., `reader`, `commenter`, `writer`)"),
+        share_type: str | None = Field(default=None, description="Permission type (e.g., `user`, `group`, `domain`, `anyone`)"),
     ) -> ShareFileToolResponse:
-        """Create a sharing permission for a file.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_id: Google Drive file ID.
-            email: Recipient email when sharing with `share_type='user'`.
-            role: Permission role. Typical values: `reader`, `commenter`, `writer`.
-            share_type: Permission type. Typical values: `user`, `group`, `domain`,
-                `anyone`. If omitted, defaults to `user` when email is set,
-                otherwise `anyone`.
-
+        """
         Returns:
             Sharing status, permission ID, links, or error.
         """
@@ -346,13 +300,8 @@ def register_tools(mcp: FastMCP) -> None:
         name="get_file_content",
         description="Get the content of a text file from Google Drive",
     )
-    def get_file_content(oauth_token: OAuthTokenData, file_id: str) -> str:
-        """Fetch UTF-8 text content of a Drive file.
-
-        Args:
-            oauth_token: OAuth credentials object with token fields.
-            file_id: Google Drive file ID.
-
+    def get_file_content(oauth_token: OAuthTokenData = Field(description="OAuth token"), file_id: str = Field( description="Google Drive file ID")) -> str:
+        """
         Returns:
             Decoded file content string, or an error message string.
         """
