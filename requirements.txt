@@ -1,4 +1,13 @@
-fastmcp>=0.1.0
+# fastmcp-credentials is a local package during development.
+# Install with: pip install -e "path/to/fastmcp-credentials"
+# For MewCP hosted deployment, also set:
+#   MEWCP_DB_URL, MEWCP_ENCRYPTION_KEY
+# For local/OSS use, set:
+#   GOOGLE_DRIVE_ACCESS_TOKEN, GOOGLE_DRIVE_REFRESH_TOKEN,
+#   GOOGLE_DRIVE_CLIENT_ID, GOOGLE_DRIVE_CLIENT_SECRET,
+#   GOOGLE_DRIVE_SCOPES
+fastmcp>=2.0.0
+fastmcp-credentials[mewcp]>=0.1.0
 google-auth>=2.25.0
 google-auth-oauthlib>=1.2.0
 google-auth-httplib2>=0.2.0
