@@ -2,7 +2,6 @@
 
 A Model Context Protocol (MCP) server that exposes Google Drive's API for listing, searching, uploading, downloading, sharing, and organizing files and folders.
 
----
 
 ## Overview
 
@@ -18,7 +17,6 @@ Perfect for:
 - Building assistants that can read, organize, and share Drive files
 - Integrating Google Drive actions into LLM-powered pipelines
 
----
 
 ## Tools
 
@@ -55,7 +53,6 @@ Lists files in Google Drive with optional filtering by parent folder, name, or t
 
 </details>
 
----
 
 <details>
 <summary><code>get_file_metadata</code> — Get metadata for a specific file by ID</summary>
@@ -84,7 +81,6 @@ Returns the full metadata object for a single file or folder.
 
 </details>
 
----
 
 <details>
 <summary><code>download_file</code> — Download a file from Google Drive to local disk</summary>
@@ -107,7 +103,6 @@ Downloads a file from Drive and writes it to a specified local path.
 
 </details>
 
----
 
 <details>
 <summary><code>upload_file</code> — Upload a file to Google Drive</summary>
@@ -137,7 +132,6 @@ Uploads a local file to Google Drive with an optional destination name, folder, 
 
 </details>
 
----
 
 <details>
 <summary><code>create_folder</code> — Create a new folder in Google Drive</summary>
@@ -165,7 +159,6 @@ Creates a new folder, optionally nested inside a parent folder.
 
 </details>
 
----
 
 <details>
 <summary><code>delete_file</code> — Delete a file or folder from Google Drive</summary>
@@ -187,7 +180,6 @@ Permanently deletes a file or folder. This action cannot be undone.
 
 </details>
 
----
 
 <details>
 <summary><code>search_files</code> — Search for files in Google Drive using advanced queries</summary>
@@ -218,7 +210,6 @@ Searches Drive using the full Drive query expression language and returns matchi
 
 </details>
 
----
 
 <details>
 <summary><code>share_file</code> — Share a file with a user or make it publicly accessible</summary>
@@ -246,7 +237,6 @@ Grants a permission on a file, either to a specific user or to anyone with the l
 
 </details>
 
----
 
 <details>
 <summary><code>get_file_content</code> — Get the content of a text file from Google Drive</summary>
@@ -266,18 +256,20 @@ Reads and returns the decoded text content of a file directly, without saving to
 
 </details>
 
----
+
+## API Parameters Reference
 
 <details>
-<summary><strong>API Parameters Reference</strong></summary>
-
-### Common Parameters
+<summary><strong>Common Parameters</strong></summary>
 
 - `file_id` — Unique Google Drive file or folder identifier. Obtain from `list_files`, `search_files`, or any file response.
 - `folder_id` — ID of a Drive folder. Use `list_files` or `search_files` with `mimeType='application/vnd.google-apps.folder'` to find folder IDs.
 - `page_size` — Limits the number of items returned. Always capped at 1000.
 
-### Resource Formats
+</details>
+
+<details>
+<summary><strong>Resource Formats</strong></summary>
 
 **Drive Query Syntax (`query` parameter):**
 
@@ -301,19 +293,21 @@ writer     — View, comment, and edit
 
 </details>
 
----
+
+## Troubleshooting
 
 <details>
-<summary><strong>Troubleshooting</strong></summary>
-
-### **Missing or Invalid Headers**
+<summary><strong>Missing or Invalid Headers</strong></summary>
 
 - **Cause:** API key not provided in request headers or incorrect format
 - **Solution:**
   1. Verify `Authorization: Bearer YOUR_API_KEY` and `X-Mewcp-Credential-Id: CREDENTIAL-ID` headers are present
   2. Check API key is active in your MewCP account
 
-### **Insufficient Credits**
+</details>
+
+<details>
+<summary><strong>Insufficient Credits</strong></summary>
 
 - **Cause:** API calls have exceeded your request limits
 - **Solution:**
@@ -321,7 +315,10 @@ writer     — View, comment, and edit
   2. Upgrade to a paid plan or add credits for higher limits
   3. Contact support for credit adjustments
 
-### **Credential Not Connected**
+</details>
+
+<details>
+<summary><strong>Credential Not Connected</strong></summary>
 
 - **Cause:** No Google Drive credential linked to your account
 - **Solution:**
@@ -329,7 +326,10 @@ writer     — View, comment, and edit
   2. Connect your Google account via OAuth
   3. Retry the request with the correct `X-Mewcp-Credential-Id` header
 
-### **Malformed Request Payload**
+</details>
+
+<details>
+<summary><strong>Malformed Request Payload</strong></summary>
 
 - **Cause:** JSON payload is invalid or missing required fields
 - **Solution:**
@@ -337,7 +337,10 @@ writer     — View, comment, and edit
   2. Ensure all required tool parameters are included
   3. Check parameter types match expected values
 
-### **Server Not Found**
+</details>
+
+<details>
+<summary><strong>Server Not Found</strong></summary>
 
 - **Cause:** Incorrect server name in the API endpoint
 - **Solution:**
@@ -345,7 +348,10 @@ writer     — View, comment, and edit
   2. Use correct server name from documentation
   3. Check available servers in your Curious Layer account
 
-### **Google Drive API Error**
+</details>
+
+<details>
+<summary><strong>Google Drive API Error</strong></summary>
 
 - **Cause:** Upstream Google Drive API returned an error
 - **Solution:**
@@ -357,12 +363,9 @@ writer     — View, comment, and edit
 
 ---
 
-<details>
-<summary><strong>Resources</strong></summary>
+### Resources
 
 - **[Google Drive API Documentation](https://developers.google.com/drive/api/guides/about-sdk)** — Official API reference
 - **[Google Drive API Reference](https://developers.google.com/drive/api/reference/rest/v3)** — Complete endpoint reference
 - **[FastMCP Docs](https://gofastmcp.com/v2/getting-started/welcome)** — FastMCP specification
 - **[FastMCP Credentials](https://pypi.org/project/fastmcp-credentials/)** — FastMCP Credentials package for credential handling
-
-</details>
