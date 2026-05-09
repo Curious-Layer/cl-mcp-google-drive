@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 venv/
@@ -7,3 +8,8 @@ __pycache__/
 .env
 *.log
 .DS_Store
+=======
+secret.json
+token.json
+authenticate_google_meet.py
+>>>>>>> d3966a8 (CL Google Meet MCP Server)
