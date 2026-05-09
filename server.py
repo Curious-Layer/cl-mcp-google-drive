@@ -8,13 +8,20 @@ from fastmcp import FastMCP
 from google_drive_mcp.cli import parse_args
 from google_drive_mcp.config import configure_logging
 from google_drive_mcp.tools import register_tools
+from fastmcp_credentials import HeaderCredentialBackend, CredentialMiddleware
+
 
 configure_logging()
 logger = logging.getLogger("google-drive-mcp-server")
 
-mcp = FastMCP("CL Google Drive MCP Server")
+backend = HeaderCredentialBackend()
+mcp = FastMCP(
+    "CL Google Drive MCP Server", middleware=[CredentialMiddleware(backend, "oauth")]
+)
 register_tools(mcp)
 
+# Expose ASGI app for hosting platform's (e.g. Vercel) Python runtime.
+app = mcp.http_app(path="/mcp", transport="streamable-http")
 
 if __name__ == "__main__":
     logger.info("=" * 60)

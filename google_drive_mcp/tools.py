@@ -12,7 +12,6 @@ from .schemas import (
     CreateFolderToolResponse,
     FilesListToolResponse,
     MessageToolResponse,
-    OAuthTokenData,
     ShareFileToolResponse,
     UploadFileToolResponse,
 )
@@ -27,10 +26,17 @@ def register_tools(mcp: FastMCP) -> None:
         description="List files in Google Drive. Supports filtering by folder, name, and type.",
     )
     def list_files(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
-        folder_id: str | None = Field(default=None, description="Optional parent folder ID to filter by"),
-        query: str = Field(default="", description="Optional additional Drive query fragment (e.g., `name contains 'report'`)"),
-        page_size: int = Field(default=10, description="Maximum number of results to return (capped at 1000)")
+        folder_id: str | None = Field(
+            default=None, description="Optional parent folder ID to filter by"
+        ),
+        query: str = Field(
+            default="",
+            description="Optional additional Drive query fragment (e.g., `name contains 'report'`)",
+        ),
+        page_size: int = Field(
+            default=10,
+            description="Maximum number of results to return (capped at 1000)",
+        ),
     ) -> FilesListToolResponse:
         """
         Returns:
@@ -38,7 +44,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info("Executing list_files")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             page_size = min(page_size, 1000)
 
             q_parts = []
@@ -67,10 +73,11 @@ def register_tools(mcp: FastMCP) -> None:
             logger.error(f"Error in list_files: {e}")
             return {"error": str(e)}
 
-    @mcp.tool(name="get_file_metadata", description="Get metadata for a specific file by ID")
+    @mcp.tool(
+        name="get_file_metadata", description="Get metadata for a specific file by ID"
+    )
     def get_file_metadata(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
-        file_id: str = Field(..., description="Google Drive file ID")
+        file_id: str = Field(..., description="Google Drive file ID"),
     ) -> ApiObjectResponse:
         """
         Returns:
@@ -79,7 +86,7 @@ def register_tools(mcp: FastMCP) -> None:
         logger.info("Executing get_file_metadata")
         logger.debug(f"File ID: {file_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             file = service.files().get(fileId=file_id, fields="*").execute()
             logger.info(f"Retrieved metadata for file: {file.get('name')}")
             return file
@@ -88,12 +95,12 @@ def register_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
     @mcp.tool(
-        name="download_file", description="Download a file from Google Drive to local disk"
+        name="download_file",
+        description="Download a file from Google Drive to local disk",
     )
     def download_file(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
         file_id: str = Field(..., description="Google Drive file ID"),
-        destination_path: str = Field(..., description="Local destination path")
+        destination_path: str = Field(..., description="Local destination path"),
     ) -> MessageToolResponse:
         """
         Returns:
@@ -102,7 +109,7 @@ def register_tools(mcp: FastMCP) -> None:
         logger.info("Executing download_file")
         logger.debug(f"Downloading file {file_id} to {destination_path}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             request = service.files().get_media(fileId=file_id)
             fh = io.BytesIO()
@@ -124,11 +131,18 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="upload_file", description="Upload a file to Google Drive")
     def upload_file(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
         file_path: str = Field(..., description="Local path to file being uploaded"),
-        name: str | None = Field(default=None, description="Optional destination filename in Drive; defaults to local filename"),
-        folder_id: str | None = Field(default=None, description="Optional parent folder ID in Drive"),
-        mime_type: str | None = Field(default=None, description="Optional MIME type (e.g., `text/plain`, `application/pdf`)"),
+        name: str | None = Field(
+            default=None,
+            description="Optional destination filename in Drive; defaults to local filename",
+        ),
+        folder_id: str | None = Field(
+            default=None, description="Optional parent folder ID in Drive"
+        ),
+        mime_type: str | None = Field(
+            default=None,
+            description="Optional MIME type (e.g., `text/plain`, `application/pdf`)",
+        ),
     ) -> UploadFileToolResponse:
         """
         Returns:
@@ -136,7 +150,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info("Executing upload_file")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             if name is None:
                 name = os.path.basename(file_path)
@@ -151,11 +165,15 @@ def register_tools(mcp: FastMCP) -> None:
 
             file = (
                 service.files()
-                .create(body=file_metadata, media_body=media, fields="id, name, webViewLink")
+                .create(
+                    body=file_metadata, media_body=media, fields="id, name, webViewLink"
+                )
                 .execute()
             )
 
-            logger.info(f"File uploaded successfully: {file['name']} (ID: {file['id']})")
+            logger.info(
+                f"File uploaded successfully: {file['name']} (ID: {file['id']})"
+            )
             return {"message": "File uploaded successfully", "file": file}
         except Exception as e:
             logger.error(f"Error in upload_file: {e}")
@@ -163,9 +181,10 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_folder", description="Create a new folder in Google Drive")
     def create_folder(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
         name: str = Field(..., description="Folder name"),
-        parent_folder_id: str | None = Field(default=None, description="Optional parent folder ID"),
+        parent_folder_id: str | None = Field(
+            default=None, description="Optional parent folder ID"
+        ),
     ) -> CreateFolderToolResponse:
         """
         Returns:
@@ -173,7 +192,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info("Executing create_folder")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             file_metadata: dict[str, Any] = {
                 "name": name,
@@ -188,16 +207,21 @@ def register_tools(mcp: FastMCP) -> None:
                 .execute()
             )
 
-            logger.info(f"Folder created successfully: {folder['name']} (ID: {folder['id']})")
+            logger.info(
+                f"Folder created successfully: {folder['name']} (ID: {folder['id']})"
+            )
             return {"message": "Folder created successfully", "folder": folder}
         except Exception as e:
             logger.error(f"Error in create_folder: {e}")
             return {"error": str(e)}
 
-    @mcp.tool(name="delete_file", description="Delete a file or folder from Google Drive")
+    @mcp.tool(
+        name="delete_file", description="Delete a file or folder from Google Drive"
+    )
     def delete_file(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
-        file_id: str = Field(..., description="Google Drive file or folder ID to delete"),
+        file_id: str = Field(
+            ..., description="Google Drive file or folder ID to delete"
+        ),
     ) -> MessageToolResponse:
         """
         Returns:
@@ -206,7 +230,7 @@ def register_tools(mcp: FastMCP) -> None:
         logger.info("Executing delete_file")
         logger.debug(f"Deleting file/folder: {file_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             service.files().delete(fileId=file_id).execute()
             logger.info(f"File/folder deleted: {file_id}")
             return {"message": f"File/folder with ID {file_id} deleted successfully"}
@@ -219,9 +243,12 @@ def register_tools(mcp: FastMCP) -> None:
         description="Search for files in Google Drive using advanced queries",
     )
     def search_files(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
-        query: str = Field(..., description="Drive query expression (e.g., `name contains 'report'`)"),
-        page_size: int = Field(default=10, description="Maximum number of results (capped at 1000)"),
+        query: str = Field(
+            ..., description="Drive query expression (e.g., `name contains 'report'`)"
+        ),
+        page_size: int = Field(
+            default=10, description="Maximum number of results (capped at 1000)"
+        ),
     ) -> FilesListToolResponse:
         """
         Returns:
@@ -230,7 +257,7 @@ def register_tools(mcp: FastMCP) -> None:
         logger.info("Executing search_files")
         logger.debug(f"Search query: {query}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             page_size = min(page_size, 1000)
 
             results = (
@@ -255,11 +282,19 @@ def register_tools(mcp: FastMCP) -> None:
         description="Share a file with a user or make it publicly accessible",
     )
     def share_file(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
         file_id: str = Field(..., description="Google Drive file ID"),
-        email: str | None = Field(default=None, description="Recipient email when sharing with `share_type='user'`"),
-        role: str = Field(default="reader", description="Permission role (e.g., `reader`, `commenter`, `writer`)"),
-        share_type: str | None = Field(default=None, description="Permission type (e.g., `user`, `group`, `domain`, `anyone`)"),
+        email: str | None = Field(
+            default=None,
+            description="Recipient email when sharing with `share_type='user'`",
+        ),
+        role: str = Field(
+            default="reader",
+            description="Permission role (e.g., `reader`, `commenter`, `writer`)",
+        ),
+        share_type: str | None = Field(
+            default=None,
+            description="Permission type (e.g., `user`, `group`, `domain`, `anyone`)",
+        ),
     ) -> ShareFileToolResponse:
         """
         Returns:
@@ -267,7 +302,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info("Executing share_file")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             if share_type is None:
                 share_type = "user" if email else "anyone"
@@ -278,11 +313,15 @@ def register_tools(mcp: FastMCP) -> None:
 
             logger.debug(f"Sharing file {file_id} with {email or 'anyone'} as {role}")
             result = (
-                service.permissions().create(fileId=file_id, body=permission, fields="id").execute()
+                service.permissions()
+                .create(fileId=file_id, body=permission, fields="id")
+                .execute()
             )
 
             file = (
-                service.files().get(fileId=file_id, fields="webViewLink, webContentLink").execute()
+                service.files()
+                .get(fileId=file_id, fields="webViewLink, webContentLink")
+                .execute()
             )
 
             logger.info(f"File shared successfully: {file_id}")
@@ -300,14 +339,16 @@ def register_tools(mcp: FastMCP) -> None:
         name="get_file_content",
         description="Get the content of a text file from Google Drive",
     )
-    def get_file_content(oauth_token: OAuthTokenData = Field(description="OAuth token"), file_id: str = Field( description="Google Drive file ID")) -> str:
+    def get_file_content(
+        file_id: str = Field(description="Google Drive file ID"),
+    ) -> str:
         """
         Returns:
             Decoded file content string, or an error message string.
         """
         logger.info("Executing get_file_content")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             request = service.files().get_media(fileId=file_id)
             fh = io.BytesIO()
